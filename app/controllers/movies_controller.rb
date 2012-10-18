@@ -1,27 +1,51 @@
 class MoviesController < ApplicationController
-
+  
   def show
     id = params[:id] # retrieve movie ID from URI route
-    logger.debug id
-    @movie = Movie.find(id) # look up movie by unique ID
+    @movie = Movie.find(id)# look up movie by unique ID
     # will render app/views/movies/show.<extension> by default
   end
 
   def index
+  
+
+    @all_ratings=Movie.allratings
+
+
+
+    @checked_ratings = (params["ratings"].present? ? params["ratings"] : @all_ratings)
+
+
     @sortby= params[:sort] # retrieve sort order from URI route
-    if (@sortby=='title') 
-        @movies = Movie.find(:all,:order => "title")
+    if (@sortby=='title')
+
+        @movies = Movie.order("title").where("rating IN (?)",@checked_ratings)
         @titleHighlight = 'hilite'
         @release_dateHighlight = ''
+
       elsif (@sortby=='release_date')
-        @movies = Movie.find(:all,:order => "release_date")
+
+        @movies = Movie.order("release_date").where("rating IN (?)",@checked_ratings)
         @titleHighlight = ''
         @release_dateHighlight = 'hilite'
-      else 
+
+      elsif (params["commit"]== 'Refresh')
+
+
+        @movies= Movie.where("rating IN (?)",@checked_ratings)
+        # Save current value of @checked_ratings for use in title and release date column sort
+        @checked_ratings = @checked_ratings
+
+      else
+
+
         @movies = Movie.all
         @titleHighlight = ''
         @release_dateHighlight = ''
+
     end
+
+
   end
 
   def new
