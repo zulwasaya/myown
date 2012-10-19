@@ -17,15 +17,17 @@ class MoviesController < ApplicationController
 
 
     @sortby= params[:sort] # retrieve sort order from URI route
+    logger.debug 'params[:rating]'
+    logger.debug params[:rating]
     if (@sortby=='title')
 
-        @movies = Movie.order("title").where("rating IN (?)",@checked_ratings)
+        @movies = Movie.order("title").where("rating IN (?)",params[:rating])
         @titleHighlight = 'hilite'
         @release_dateHighlight = ''
 
       elsif (@sortby=='release_date')
 
-        @movies = Movie.order("release_date").where("rating IN (?)",@checked_ratings)
+        @movies = Movie.order("release_date").where("rating IN (?)",params[:rating])
         @titleHighlight = ''
         @release_dateHighlight = 'hilite'
 
