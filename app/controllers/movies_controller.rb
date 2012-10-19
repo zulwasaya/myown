@@ -7,49 +7,38 @@ class MoviesController < ApplicationController
   end
 
   def index
-  
-
-    @all_ratings=Movie.allratings
-
-
-
-    @checked_ratings = (params["ratings"].present? ? params["ratings"] : @all_ratings)
-
-
-    @sortby= params[:sort] # retrieve sort order from URI route
-    logger.debug 'params[:rating]'
-    logger.debug params[:rating]
-    if (@sortby=='title')
-
-        @movies = Movie.order("title").where("rating IN (?)",params[:rating])
-        @titleHighlight = 'hilite'
-        @release_dateHighlight = ''
-
-      elsif (@sortby=='release_date')
-
-        @movies = Movie.order("release_date").where("rating IN (?)",params[:rating])
-        @titleHighlight = ''
-        @release_dateHighlight = 'hilite'
-
-      elsif (params["commit"]== 'Refresh')
-
-
-        @movies= Movie.where("rating IN (?)",@checked_ratings)
-        # Save current value of @checked_ratings for use in title and release date column sort
-        @checked_ratings = @checked_ratings
-
-      else
-
-
-        @movies = Movie.all
-        @titleHighlight = ''
-        @release_dateHighlight = ''
-
+   
+    # Session code
+    if params[:commit] == 'Refresh'
+      session[:ratings] = params[:ratings]
+    elsif session[:ratings] != params[:ratings]
+      redirect = true
+      params[:ratings] = session[:ratings]
     end
 
+    if params[:sort]
+      session[:sort] = params[:sort]
+    elsif session[:sort]
+      redirect = true
+      params[:sort] = session[:sort]
+    end
+    @ratings, @sortby = session[:ratings], session[:sort]
+    if redirect
+      redirect_to movies_path({:sort=>@sortby, :ratings=>@ratings})
+    elsif
+      sortkey = {'title'=>'title', 'release_date'=>'release_date'}
+      if sortkey.has_key?(@sortby)
+        sortbykey = Movie.order(sortkey[@sortby])
+      else
+        @sortby = nil
+        query = Movie
+      end
+      @movies = @ratings.nil? ? sortbykey.all : sortbykey.find_all_by_rating(@ratings.map { |r| r[0] })
+      @all_ratings=Movie.allratings
+    end
 
   end
-
+  
   def new
     # default: render 'new' template
   end
