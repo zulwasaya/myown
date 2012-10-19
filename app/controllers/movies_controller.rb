@@ -31,7 +31,7 @@ class MoviesController < ApplicationController
         sortbykey = Movie.order(sortkey[@sortby])
       else
         @sortby = nil
-        query = Movie
+        sortbykey = Movie
       end
       @movies = @ratings.nil? ? sortbykey.all : sortbykey.find_all_by_rating(@ratings.map { |r| r[0] })
       @all_ratings=Movie.allratings
